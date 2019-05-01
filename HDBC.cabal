@@ -40,7 +40,7 @@ library
     else
       Build-Depends: time < 1.5, old-locale
   else
-    Build-Depends: base<3
+    Build-Depends: base>=3 && <5
   Build-Depends: mtl, convertible >= 1.1.0.0, text, utf8-string
 
   -- Hack for cabal-install weirdness.  cabal-install forces base 3,
@@ -70,7 +70,7 @@ Executable runtests
         else
           Build-Depends: time < 1.5, old-locale
       else
-        Build-Depends: base<3
+        Build-Depends: base>=3 && <5
       Build-Depends: mtl, convertible >= 1.1.0.0, utf8-string, text
 
       -- Hack for cabal-install weirdness.  cabal-install forces base 3,
