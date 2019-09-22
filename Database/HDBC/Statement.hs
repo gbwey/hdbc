@@ -40,8 +40,8 @@ data Statement = Statement
         certainly fail; use 'execute' instead. -}
      executeRaw :: IO (),
 
-     {- | Execute the query with many rows. 
-        The return value is the return value from the final row 
+     {- | Execute the query with many rows.
+        The return value is the return value from the final row
         as if you had called 'execute' on it.
 
         Due to optimizations that are possible due to different
@@ -51,7 +51,7 @@ data Statement = Statement
 
         This is most useful for non-SELECT statements. -}
      executeMany :: [[SqlValue]] -> IO (),
-                 
+
      {- | Abort a query in progress -- usually not needed. -}
      finish :: IO (),
 
@@ -64,7 +64,7 @@ data Statement = Statement
         For maximum portability, you should not assume that
         information is available until after an 'execute' function
         has been run.
-        
+
         Information is returned here directly as returned
         by the underlying database layer.  Note that different
         databases have different rules about capitalization
@@ -98,7 +98,7 @@ data Statement = Statement
           on the column name field here.
  -}
      describeResult :: IO [(String, SqlColDesc)],
-     
+
      nextResultSet :: IO (Maybe (Maybe Int))
     }
 
@@ -113,8 +113,4 @@ data SqlError = SqlError {seState :: String,
                 deriving (Eq, Show, Read, Typeable)
 
 
-#if __GLASGOW_HASKELL__ >= 610
---data SqlException
 instance Exception SqlError where
-
-#endif

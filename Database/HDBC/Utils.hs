@@ -26,13 +26,12 @@ import Data.List(genericLength)
 
 -- import Data.Dynamic below for GHC < 6.10
 
-#if __GLASGOW_HASKELL__ >= 610
 {- | Execute the given IO action.
 
 If it raises a 'SqlError', then execute the supplied handler and return its
 return value.  Otherwise, proceed as normal. -}
 catchSql :: IO a -> (SqlError -> IO a) -> IO a
-catchSql action handler = 
+catchSql action handler =
     catchJust sqlExceptions action handler
 
 {- | Like 'catchSql', with the order of arguments reversed. -}
@@ -43,26 +42,6 @@ handleSql h f = catchSql f h
 otherwise. Useful with functions like catchJust. -}
 sqlExceptions :: SqlError -> Maybe SqlError
 sqlExceptions e = Just e
-
-#else
-import Data.Dynamic
-
-{- | Execute the given IO action.
-
-If it raises a 'SqlError', then execute the supplied handler and return its
-return value.  Otherwise, proceed as normal. -}
-catchSql :: IO a -> (SqlError -> IO a) -> IO a
-catchSql = catchDyn
-
-{- | Like 'catchSql', with the order of arguments reversed. -}
-handleSql :: (SqlError -> IO a) -> IO a -> IO a
-handleSql h f = catchDyn f h
-
-{- | Given an Exception, return Just SqlError if it was an SqlError, or Nothing
-otherwise. Useful with functions like catchJust. -}
-sqlExceptions :: Exception -> Maybe SqlError
-sqlExceptions e = dynExceptions e >>= fromDynamic
-#endif
 
 {- | Catches 'SqlError's, and re-raises them as IO errors with fail.
 Useful if you don't care to catch SQL errors, but want to see a sane
@@ -86,7 +65,7 @@ sExecute sth lst = execute sth (map toSql lst)
 {- | Like 'executeMany', but take a list of Maybe Strings instead of
    'SqlValue's. -}
 sExecuteMany :: Statement -> [[Maybe String]] -> IO ()
-sExecuteMany sth lst = 
+sExecuteMany sth lst =
     executeMany sth (map (map toSql) lst)
 
 {- | Like 'fetchRow', but return a list of Maybe Strings instead of
@@ -124,25 +103,15 @@ on this behavior is solicited.
 -}
 withTransaction :: IConnection conn => conn -> (conn -> IO a) -> IO a
 withTransaction conn func =
-#if __GLASGOW_HASKELL__ >= 610
     do r <- onException (func conn) doRollback
        commit conn
        return r
-    where doRollback = 
+    where doRollback =
               -- Discard any exception from (rollback conn) so original
               -- exception can be re-raised
               Control.Exception.catch (rollback conn) doRollbackHandler
           doRollbackHandler :: SomeException -> IO ()
           doRollbackHandler _ = return ()
-#else
-    do r <- try (func conn)
-       case r of
-         Right x -> do commit conn
-                       return x
-         Left e -> 
-             do try (rollback conn) -- Discard any exception here
-                throw e
-#endif
 {- | Lazily fetch all rows from an executed 'Statement'.
 
 You can think of this as hGetContents applied to a database result set.
@@ -227,7 +196,7 @@ fetchRowAL' sth =
 {- | Similar to 'fetchRowAL', but return a Map instead of an association list.
 -}
 fetchRowMap :: Statement -> IO (Maybe (Map.Map String SqlValue))
-fetchRowMap sth = 
+fetchRowMap sth =
     do r <- fetchRowAL sth
        case r of
               Nothing -> return Nothing
@@ -235,7 +204,7 @@ fetchRowMap sth =
 
 {- | Strict version of 'fetchRowMap'. -}
 fetchRowMap' :: Statement -> IO (Maybe (Map.Map String SqlValue))
-fetchRowMap' sth = 
+fetchRowMap' sth =
     do res <- fetchRowMap sth
        _ <- case res of
             Nothing -> return 0
@@ -266,7 +235,7 @@ fetchAllRowsMap sth = fetchAllRowsAL sth >>= (return . map Map.fromList)
 
 {- | Strict version of 'fetchAllRowsMap' -}
 fetchAllRowsMap' :: Statement -> IO [Map.Map String SqlValue]
-fetchAllRowsMap' sth = 
+fetchAllRowsMap' sth =
     do res <- fetchAllRowsMap sth
        _ <- evaluate ((genericLength res)::Integer)
        return res
@@ -293,8 +262,4 @@ takes care of the special cases to make it simpler.
 With GHC 6.10, it is a type-restricted alias for throw.  On all other systems,
 it is a type-restricted alias for throwDyn. -}
 throwSqlError :: SqlError -> IO a
-#if __GLASGOW_HASKELL__ >= 610
 throwSqlError = throw
-#else
-throwSqlError = throwDyn
-#endif
