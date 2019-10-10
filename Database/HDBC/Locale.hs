@@ -7,11 +7,7 @@ module Database.HDBC.Locale
 
 where
 
-#ifdef MIN_TIME_15
-import Data.Time.Format (defaultTimeLocale)
-#else
-import System.Locale (defaultTimeLocale)
-#endif
+import Data.Time (defaultTimeLocale)
 
 -- | As the semantic of System.Locale.iso8601DateFormat has changed with
 --   old-locale-1.0.0.2 in a non-compatible way, we now define our own

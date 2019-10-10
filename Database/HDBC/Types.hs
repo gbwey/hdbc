@@ -60,7 +60,7 @@ This function discards any data not committed already.  Database driver
 implementators should explicitly call 'rollback' if their databases don't
 do this automatically on disconnect.
 
-Bad Things (TM) could happen if you call this while you have 'Statement's 
+Bad Things (TM) could happen if you call this while you have 'Statement's
 active.  In more precise language, the results in such situations are undefined
 and vary by database.  So don't do it.
 
@@ -86,8 +86,8 @@ and vary by database.  So don't do it.
                    of rows modified (see 'execute' for details).
                    The second parameter is a list
                    of replacement values, if any. -}
-                run :: conn -> String -> [SqlValue] -> IO (Maybe Int)
-                {- | Prepares a statement for execution. 
+                run :: conn -> String -> [SqlValue] -> IO (Either Int [(String, SqlColDesc)])
+                {- | Prepares a statement for execution.
 
                    Question marks in the statement will be replaced by
                    positional parameters in a later call to 'execute'.
@@ -105,7 +105,7 @@ and vary by database.  So don't do it.
                    server, the correct way to do so is to establish the
                    first connection with the driver-specific connection
                    function, and then clone it for each additional connection.
-                   
+
                    This can be important when a database doesn't provide
                    much thread support itself, and the HDBC driver module
                    must serialize access to a particular database.
@@ -151,7 +151,7 @@ and vary by database.  So don't do it.
 
                 {- | The names of all tables accessible by the current
                    connection, excluding special meta-tables (system tables).
-                   
+
                    You should expect this to be returned in the same manner
                    as a result from 'Database.HDBC.fetchAllRows''.
 

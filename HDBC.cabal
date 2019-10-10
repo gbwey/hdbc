@@ -20,33 +20,10 @@ Cabal-Version: >=1.8
 
 source-repository head
   type:            git
-  location:        https://github.com/hdbc/hdbc.git
-
-flag splitBase
-  description: Choose the new smaller, split-up base package.
-flag buildtests
-  description: Build the executable to run unit tests
-  default: False
-flag minTime15
-  description: Use time 1.5 or higher.
-  default: True
+  location:        https://github.com/gbwey/hdbc.git
 
 library
-  if flag(splitBase)
-    Build-Depends: base>=3 && <5, old-time, bytestring, containers
-    if flag(minTime15)
-      Build-Depends: time >= 1.5 && < 1.9
-      CPP-Options: -DMIN_TIME_15
-    else
-      Build-Depends: time < 1.5, old-locale
-  else
-    Build-Depends: base>=3 && <5
-  Build-Depends: mtl, convertible >= 1.1.0.0, text, utf8-string
-
-  -- Hack for cabal-install weirdness.  cabal-install forces base 3,
-  -- though it works fine for Setup.lhs manually.  Fix.
-  if impl(ghc >= 6.9)
-     build-depends: base >= 4
+  Build-Depends: base>=4 && <5, bytestring, old-time, containers, time, mtl, convertible >= 1.1.0.0, text, utf8-string
 
   GHC-Options: -O2 -Wall -fno-warn-orphans
 
@@ -59,26 +36,9 @@ library
     FlexibleInstances, DeriveDataTypeable
 
 Executable runtests
-   if flag(buildtests)
-      Buildable: True
-      Build-Depends: HUnit, QuickCheck (>= 2.0), testpack (>= 2.0)
+   buildable: False
 
-      if flag(splitBase)
-        Build-Depends: base>=3 && <5, old-time, bytestring, containers
-        if flag(minTime15)
-          Build-Depends: time >= 1.5 && < 1.9
-        else
-          Build-Depends: time < 1.5, old-locale
-      else
-        Build-Depends: base>=3 && <5
-      Build-Depends: mtl, convertible >= 1.1.0.0, utf8-string, text
-
-      -- Hack for cabal-install weirdness.  cabal-install forces base 3,
-      -- though it works fine for Setup.lhs manually.  Fix.
-      if impl(ghc >= 6.9)
-         build-depends: base >= 4
-   else
-      Buildable: False
+   Build-Depends: base>=4 && <5, HUnit, QuickCheck (>= 2.0), testpack (>= 2.0), mtl, convertible >= 1.1.0.0, utf8-string, text
    Main-Is: runtests.hs
    Other-Modules: TestSqlValue
                   TestInfrastructure
